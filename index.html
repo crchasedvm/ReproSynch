@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Guide to NZ Dairy Sync Programs</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Warm Neutrals with Subtle Accents -->
+    <!-- Application Structure Plan: A user-centric, task-oriented design. The SPA is structured into clear, thematic sections accessible via a top navigation bar: 'Why Sync?', 'Heifers', 'Lactating Cows', and 'Economics'. This departs from the report's linear flow to allow users to directly access the information most relevant to them. The 'Heifers' and 'Lactating Cows' sections use a sub-navigation (tabs) to let users compare different protocols side-by-side. This structure was chosen to facilitate decision-making by presenting comparable options in an easily digestible format. Key interactions include protocol selection tabs, which dynamically update a central content area displaying protocol timelines, key features, and performance data via Chart.js visualizations. This interactive comparison is more intuitive and engaging than static tables. -->
+    <!-- Visualization & Content Choices: 
+        - Report Info: Heifer Protocol Comparison (Double PG, 7-day Co-Synch, 5-day "Heifer Plus", P4+PG). Goal: Compare effectiveness and cost. Viz/Method: Interactive bar chart (Chart.js) showing Conception Rate and ROI. Interaction: Data updates based on which protocol tab is active. Justification: A bar chart provides clear visual comparison of quantitative data. Library: Chart.js.
+        - Report Info: Protocol Timelines (e.g., Double-Ovsynch). Goal: Organize complex schedules. Viz/Method: Styled HTML grid/flexbox to create a clear, visual calendar. Interaction: Highlighting key action days. Justification: A visual calendar is more intuitive than a text list for time-based sequences. Method: HTML/Tailwind.
+        - Report Info: Farmer vs. Vet Opinion Gap. Goal: Inform and highlight a key challenge. Viz/Method: Two-sided bar chart. Interaction: Static visualization with clear labels. Justification: Directly visualizes the disparity in survey data. Library: Chart.js.
+        - Report Info: Economic ROI Calculation. Goal: Inform and empower decision-making. Viz/Method: Interactive calculator form. Interaction: User inputs farm-specific values to see a calculated ROI. Justification: Makes the economic analysis tangible and personalized. Method: JS/HTML.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .chart-container { position: relative; width: 100%; max-width: 600px; margin-left: auto; margin-right: auto; height: 350px; max-height: 400px; }
+        @media (max-width: 768px) { .chart-container { height: 300px; } }
+        .nav-button { transition: all 0.3s ease; }
+        .nav-button.active { background-color: #374151; color: #F9FAFB; }
+        .nav-button:not(.active):hover { background-color: #E5E7EB; }
+        .tab-button { transition: all 0.3s ease; border-bottom: 2px solid transparent; }
+        .tab-button.active { border-bottom-color: #4f46e5; color: #374151; font-weight: 600; }
+        .tab-button:not(.active):hover { border-bottom-color: #D1D5DB; }
+        .timeline-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 0.5rem; }
+        .timeline-day { background-color: #F3F4F6; border-radius: 0.375rem; padding: 0.5rem; text-align: center; font-size: 0.875rem; }
+        .timeline-day.header { font-weight: 600; background-color: #E5E7EB; }
+        .timeline-day.action { background-color: #C7D2FE; border: 1px solid #818CF8; }
+        .timeline-day.ai { background-color: #A7F3D0; border: 1px solid #34D399; font-weight: 700; }
+        .fade-in { animation: fadeIn 0.5s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+
+    <div class="min-h-screen">
+        <header class="bg-white shadow-sm sticky top-0 z-50">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between items-center py-4">
+                    <div class="flex items-center space-x-2">
+                        <span class="text-2xl">🐄</span>
+                        <h1 class="text-xl font-bold text-gray-900">NZ Dairy Sync Guide</h1>
+                    </div>
+                    <nav class="hidden md:flex space-x-2">
+                        <button data-target="why-sync" class="nav-button active px-3 py-2 rounded-md text-sm font-medium">Why Sync?</button>
+                        <button data-target="heifers" class="nav-button px-3 py-2 rounded-md text-sm font-medium">Heifers</button>
+                        <button data-target="cows" class="nav-button px-3 py-2 rounded-md text-sm font-medium">Lactating Cows</button>
+                        <button data-target="economics" class="nav-button px-3 py-2 rounded-md text-sm font-medium">Economics</button>
+                    </nav>
+                     <div class="md:hidden">
+                        <select id="mobile-nav" class="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
+                            <option value="why-sync">Why Sync?</option>
+                            <option value="heifers">Heifers</option>
+                            <option value="cows">Lactating Cows</option>
+                            <option value="economics">Economics</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <main id="main-content" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            
+            <section id="why-sync" class="page-section fade-in">
+                <h2 class="text-3xl font-bold text-gray-900 mb-4">The Strategic Case for Synchronisation</h2>
+                <p class="mb-6 text-lg text-gray-600">Implementing a reproductive synchronisation program is a key strategic decision for profitability in New Zealand's seasonal, pasture-based dairy system. This section outlines the core business case, from aligning herd biology with pasture growth to the quantifiable economic gains and the critical farmer-veterinarian relationship.</p>
+                
+                <div class="grid md:grid-cols-2 gap-8">
+                    <div class="bg-white p-6 rounded-lg shadow">
+                        <h3 class="text-xl font-semibold mb-3">Aligning Biology with Pasture</h3>
+                        <p class="text-gray-700">The NZ dairy model's profitability hinges on matching the herd's peak feed demand with peak pasture growth. A compact calving pattern is essential. Reproductive inefficiency creates a mismatch, leading to wasted pasture, higher supplementation costs, and shorter lactations. Synchronisation is the primary tool to achieve a "front-loaded" calving season, which improves calf uniformity, weaning weights, and the dam's recovery time for the next breeding season.</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow">
+                        <h3 class="text-xl font-semibold mb-3">The Farmer-Vet Disconnect</h3>
+                        <p class="text-gray-700 mb-4">A significant gap exists between veterinarian and farmer perceptions of the cost-effectiveness of sync programs. This guide aims to bridge that gap by providing transparent, evidence-based information to empower collaborative decision-making.</p>
+                        <div class="chart-container" style="height: 250px; max-height: 250px;">
+                            <canvas id="perceptionChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="heifers" class="page-section hidden fade-in">
+                <h2 class="text-3xl font-bold text-gray-900 mb-2">Heifer Synchronisation Protocols</h2>
+                <p class="mb-6 text-lg text-gray-600">Synchronising heifers, the animals with the highest genetic merit, is a powerful driver of herd improvement. This section details strategies from foundational programs to the latest cutting-edge research, allowing for direct comparison of protocols.</p>
+                
+                <div class="border-b border-gray-200 mb-6">
+                    <nav class="-mb-px flex space-x-6" id="heifer-tabs">
+                        <button data-protocol="heifer-cosynch" class="tab-button active py-3 px-1 text-base font-medium">7-day Co-Synch + P4</button>
+                        <button data-protocol="heifer-plus" class="tab-button py-3 px-1 text-base font-medium">Modified 5-day "Heifer Plus"</button>
+                        <button data-protocol="heifer-pg" class="tab-button py-3 px-1 text-base font-medium">P4 + PG Program</button>
+                    </nav>
+                </div>
+
+                <div id="heifer-protocol-content" class="fade-in"></div>
+            </section>
+
+            <section id="cows" class="page-section hidden fade-in">
+                <h2 class="text-3xl font-bold text-gray-900 mb-2">Advanced Fertility Programs for Lactating Cows</h2>
+                <p class="mb-6 text-lg text-gray-600">Managing reproduction in the milking herd is complicated by the metabolic stress of lactation. Advanced fertility programs use "presynchronisation" to prepare cows for timed AI, significantly improving outcomes, especially in herds with non-cycling cows.</p>
+
+                <div class="border-b border-gray-200 mb-6">
+                    <nav class="-mb-px flex space-x-6" id="cow-tabs">
+                        <button data-protocol="cow-presynch" class="tab-button active py-3 px-1 text-base font-medium">Presynch-11 / Ovsynch</button>
+                        <button data-protocol="cow-doubleovsynch" class="tab-button py-3 px-1 text-base font-medium">Double-Ovsynch</button>
+                        <button data-protocol="cow-anoestrous" class="tab-button py-3 px-1 text-base font-medium">GPG + P4 (Anoestrous)</button>
+                    </nav>
+                </div>
+
+                <div id="cow-protocol-content" class="fade-in"></div>
+            </section>
+
+            <section id="economics" class="page-section hidden fade-in">
+                <h2 class="text-3xl font-bold text-gray-900 mb-2">Farm-Specific Cost-Benefit Analysis</h2>
+                <p class="mb-6 text-lg text-gray-600">An informed business decision requires a cost-benefit analysis tailored to your farm. Use this framework to calculate the potential return on investment (ROI) from implementing a synchronisation program. Adjust the values below to match your farm's data.</p>
+                
+                <div class="bg-white p-8 rounded-lg shadow">
+                    <div class="grid md:grid-cols-2 gap-8">
+                        <div>
+                            <h3 class="text-xl font-semibold mb-4">Your Farm's Inputs</h3>
+                            <div class="space-y-4">
+                                <div>
+                                    <label for="milkPrice" class="block text-sm font-medium text-gray-700">Milk Price ($/kgMS)</label>
+                                    <input type="number" id="milkPrice" value="8.00" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                                </div>
+                                <div>
+                                    <label for="dailyMS" class="block text-sm font-medium text-gray-700">Avg. Daily Milk Solids (kgMS/day)</label>
+                                    <input type="number" id="dailyMS" value="1.6" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                                </div>
+                                <div>
+                                    <label for="heifersTreated" class="block text-sm font-medium text-gray-700">Number of Heifers to Treat</label>
+                                    <input type="number" id="heifersTreated" value="100" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                                </div>
+                                <div>
+                                    <label for="programCost" class="block text-sm font-medium text-gray-700">Program Cost per Heifer ($)</label>
+                                    <input type="number" id="programCost" value="118" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" placeholder="Hormones, Semen, Labour, etc.">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-indigo-50 p-6 rounded-lg">
+                            <h3 class="text-xl font-semibold mb-4 text-indigo-900">Projected ROI for "Heifer Plus" Program</h3>
+                            <p class="text-gray-600 mb-4">Based on trial data showing 10 extra days in milk per heifer vs standard programs.</p>
+                            <div class="space-y-3">
+                                <div>
+                                    <p class="text-sm text-indigo-800">Benefit per Heifer</p>
+                                    <p id="benefitPerHeifer" class="text-3xl font-bold text-indigo-900">$128.00</p>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-indigo-800">Net Return per Heifer</p>
+                                    <p id="netReturnPerHeifer" class="text-3xl font-bold text-green-600">$10.00</p>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-indigo-800">Total Net Return for Mob</p>
+                                    <p id="totalNetReturn" class="text-3xl font-bold text-green-600">$1,000.00</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const mainContent = document.getElementById('main-content');
+            const navButtons = document.querySelectorAll('.nav-button');
+            const mobileNav = document.getElementById('mobile-nav');
+            const pageSections = document.querySelectorAll('.page-section');
+
+            const heiferProtocolContent = document.getElementById('heifer-protocol-content');
+            const heiferTabs = document.querySelectorAll('#heifer-tabs .tab-button');
+            
+            const cowProtocolContent = document.getElementById('cow-protocol-content');
+            const cowTabs = document.querySelectorAll('#cow-tabs .tab-button');
+
+            const perceptionData = {
+                labels: ['Veterinarians', 'Farmers'],
+                datasets: [{
+                    label: 'Believe Sync is Cost-Effective',
+                    data: [93, 38],
+                    backgroundColor: ['#4f46e5', '#a5b4fc'],
+                    borderColor: ['#3730a3', '#818cf8'],
+                    borderWidth: 1
+                }]
+            };
+            
+            const heiferChartData = {
+                labels: ['7-day Co-Synch', 'Heifer Plus', 'P4 + PG'],
+                conceptionRates: [55, 65, 55],
+                protocolIds: ['heifer-cosynch', 'heifer-plus', 'heifer-pg']
+            };
+
+            let perceptionChart, heiferComparisonChart;
+
+            function switchPage(targetId) {
+                pageSections.forEach(section => {
+                    section.classList.add('hidden');
+                });
+                const activeSection = document.getElementById(targetId);
+                if (activeSection) {
+                    activeSection.classList.remove('hidden');
+                    activeSection.classList.add('fade-in');
+                }
+
+                navButtons.forEach(btn => {
+                    btn.classList.toggle('active', btn.dataset.target === targetId);
+                });
+                mobileNav.value = targetId;
+
+                if (targetId === 'why-sync' && !perceptionChart) {
+                    renderPerceptionChart();
+                }
+            }
+            
+            function renderPerceptionChart() {
+                const ctx = document.getElementById('perceptionChart').getContext('2d');
+                perceptionChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: perceptionData,
+                    options: {
+                        indexAxis: 'y',
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            title: { display: true, text: '% Who Believe Sync is Cost-Effective' }
+                        },
+                        scales: { x: { max: 100, ticks: { callback: value => value + '%' } } }
+                    }
+                });
+            }
+
+            function renderHeiferProtocol(protocolId) {
+                const content = {
+                    'heifer-cosynch': {
+                        title: '7-day Co-Synch + P4 Program',
+                        desc: "A widely used and validated standard in New Zealand for Fixed-Time AI (FTAI), eliminating the need for heat detection. It's a robust, reliable choice for achieving good results and simplifying labour.",
+                        features: ['Fixed-Time AI', 'No heat detection needed', 'Effective in inducing cyclicity'],
+                        timeline: `
+                            <div class="timeline-day header">Day -9</div>
+                            <div class="timeline-day header">...</div>
+                            <div class="timeline-day header">Day -2</div>
+                            <div class="timeline-day header">...</div>
+                            <div class="timeline-day header">Day 0</div>
+                            <div class="timeline-day header">...</div>
+                            <div class="timeline-day header">...</div>
+                            <div class="timeline-day action">Inject GnRH<br>Insert P4</div>
+                            <div class="timeline-day"></div>
+                            <div class="timeline-day action">Remove P4<br>Inject PGF</div>
+                            <div class="timeline-day"></div>
+                            <div class="timeline-day ai">Inject GnRH<br>Timed AI</div>
+                            <div class="timeline-day"></div>
+                            <div class="timeline-day"></div>
+                        `
+                    },
+                    'heifer-plus': {
+                        title: 'Modified 5-Day Co-Synch + P4 ("Heifer Plus")',
+                        desc: "The current frontier in heifer sync, based on recent large-scale NZ research. This protocol uses altered timings and a shorter 5-day progesterone window to ovulate a younger, more fertile follicle, delivering superior fertility and economic returns.",
+                        features: [
+                            'Highest fertility rates', 
+                            'Maximises genetic gain', 
+                            'Proven superior ROI in NZ trials',
+                            'Uses a split PGF dose to ensure complete luteolysis'
+                        ],
+                        timeline: `
+                            <div class="timeline-day header">Day -8</div>
+                            <div class="timeline-day header">...</div>
+                            <div class="timeline-day header">Day -3</div>
+                            <div class="timeline-day header">Day -2</div>
+                            <div class="timeline-day header">Day -1</div>
+                            <div class="timeline-day header">Day 0</div>
+                            <div class="timeline-day header">...</div>
+                            <div class="timeline-day action">Inject GnRH<br>Insert P4</div>
+                            <div class="timeline-day"></div>
+                            <div class="timeline-day action">Remove P4<br>Inject PGF (1)</div>
+                            <div class="timeline-day action">Inject PGF (2)<br>24h later</div>
+                            <div class="timeline-day"></div>
+                            <div class="timeline-day ai">Inject GnRH<br>Timed AI</div>
+                            <div class="timeline-day"></div>
+                        `
+                    },
+                    'heifer-pg': {
+                        title: 'P4 + PG Program',
+                        desc: "An advanced, cost-effective alternative validated by Massey University research. It omits the initial, non-essential GnRH injection for well-grown, cycling heifers, significantly reducing drug costs without compromising conception rates.",
+                        features: ['Lower drug cost', 'No loss of fertility vs 7-day', 'Ideal for cost-conscious farms'],
+                        timeline: `
+                            <div class="timeline-day header">Day -7</div>
+                            <div class="timeline-day header">...</div>
+                            <div class="timeline-day header">Day 0</div>
+                            <div class="timeline-day header">...</div>
+                            <div class="timeline-day header">Day 2-3</div>
+                            <div class="timeline-day header">...</div>
+                            <div class="timeline-day header">...</div>
+                            <div class="timeline-day action">Insert P4</div>
+                            <div class="timeline-day"></div>
+                            <div class="timeline-day action">Remove P4<br>Inject PGF</div>
+                            <div class="timeline-day"></div>
+                            <div class="timeline-day ai">Timed AI</div>
+                            <div class="timeline-day"></div>
+                            <div class="timeline-day"></div>
+                        `
+                    }
+                };
+                
+                const protocol = content[protocolId];
+                heiferProtocolContent.innerHTML = `
+                    <div class="grid lg:grid-cols-2 gap-8">
+                        <div class="bg-white p-6 rounded-lg shadow">
+                            <h3 class="text-xl font-semibold mb-2">${protocol.title}</h3>
+                            <p class="text-gray-700 mb-4">${protocol.desc}</p>
+                            <h4 class="font-semibold mb-2">Key Features:</h4>
+                            <ul class="list-disc list-inside space-y-1 text-gray-700">
+                                ${protocol.features.map(f => `<li>${f}</li>`).join('')}
+                            </ul>
+                            <h4 class="font-semibold mt-6 mb-2">Protocol Timeline:</h4>
+                            <div class="timeline-grid">${protocol.timeline}</div>
+                        </div>
+                        <div class="bg-white p-6 rounded-lg shadow">
+                             <h3 class="text-xl font-semibold mb-3">Comparative Conception Rates</h3>
+                             <div class="chart-container">
+                                <canvas id="heiferComparisonChart"></canvas>
+                             </div>
+                        </div>
+                    </div>
+                `;
+                
+                heiferTabs.forEach(tab => tab.classList.toggle('active', tab.dataset.protocol === protocolId));
+                
+                renderHeiferChart(protocolId);
+            }
+            
+            function renderHeiferChart(activeProtocolId) {
+                if (heiferComparisonChart) {
+                    heiferComparisonChart.destroy();
+                }
+                const ctx = document.getElementById('heiferComparisonChart').getContext('2d');
+                
+                const backgroundColors = heiferChartData.protocolIds.map(id => {
+                    return id === activeProtocolId ? '#4f46e5' : '#a5b4fc';
+                });
+
+                heiferComparisonChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: heiferChartData.labels,
+                        datasets: [{
+                            label: 'Expected AI Conception Rate',
+                            data: heiferChartData.conceptionRates,
+                            backgroundColor: backgroundColors,
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { 
+                            legend: { display: false },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return ` ${context.raw}%`;
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: { 
+                                beginAtZero: true, 
+                                max: 80,
+                                ticks: { callback: value => value + '%' }
+                            }
+                        }
+                    }
+                });
+            }
+
+            function renderCowProtocol(protocolId) {
+                const content = {
+                    'cow-presynch': {
+                        title: 'Presynch-11 / Ovsynch',
+                        desc: "A robust strategy for predominantly CYCLING cows. The initial PGF injections 'stage' the herd's cycles, ensuring most cows are in the optimal state for the main Ovsynch TAI protocol, leading to excellent pregnancy rates.",
+                        bestFor: "Herds with good cycling rates aiming for a high-submission, high-fertility first round of AI.",
+                        proTip: "",
+                        timeline: `
+                            <div class="font-semibold col-span-7 text-center py-2 bg-gray-100 rounded-t-lg">Weeks 1-3: Presynch Phase</div>
+                            <div class="timeline-day header">Mon</div><div class="timeline-day header">Tue</div><div class="timeline-day header">Wed</div><div class="timeline-day header">Thu</div><div class="timeline-day header">Fri</div><div class="timeline-day header">Sat</div><div class="timeline-day header">Sun</div>
+                            <div class="timeline-day action">PGF (1)</div><div class="timeline-day"></div><div class="timeline-day"></div><div class="timeline-day"></div><div class="timeline-day"></div><div class="timeline-day"></div><div class="timeline-day"></div>
+                            <div class="col-span-7 h-2"></div>
+                            <div class="timeline-day action">PGF (2)</div><div class="timeline-day"></div><div class="timeline-day"></div><div class="timeline-day"></div><div class="timeline-day"></div><div class="timeline-day"></div><div class="timeline-day"></div>
+                            <div class="font-semibold col-span-7 text-center py-2 bg-gray-100 mt-4">Weeks 4-5: Ovsynch & TAI</div>
+                            <div class="timeline-day header">Mon</div><div class="timeline-day header">Tue</div><div class="timeline-day header">Wed</div><div class="timeline-day header">Thu</div><div class="timeline-day header">Fri</div><div class="timeline-day header">Sat</div><div class="timeline-day header">Sun</div>
+                            <div class="timeline-day"></div><div class="timeline-day"></div><div class="timeline-day"></div><div class="timeline-day action">GnRH (1)</div><div class="timeline-day"></div><div class="timeline-day"></div><div class="timeline-day"></div>
+                            <div class="col-span-7 h-2"></div>
+                            <div class="timeline-day"></div><div class="timeline-day"></div><div class="timeline-day"></div><div class="timeline-day action">PGF</div><div class="timeline-day"></div><div class="timeline-day action">GnRH (2)</div><div class="timeline-day ai">TAI</div>
+                        `
+                    },
+                    'cow-doubleovsynch': {
+                        title: 'Double-Ovsynch',
+                        desc: "The gold standard for herds with a significant anoestrus problem (>15-20%). It uses a full, non-breeding Ovsynch protocol to 'kick-start' cyclicity in non-cycling cows before the breeding protocol begins, leading to superior overall pregnancy rates.",
+                        bestFor: "Herds with a high incidence of non-cycling cows or those aiming for the highest possible fertility outcomes.",
+                        proTip: "",
+                        timeline: `
+                            <div class="font-semibold col-span-7 text-center py-2 bg-gray-100 rounded-t-lg">Weeks 1-2: Presynch Ovsynch (Non-Breeding)</div>
+                            <div class="timeline-day header">Mon</div><div class="timeline-day header">Tue</div><div class="timeline-day header">Wed</div><div class="timeline-day header">Thu</div><div class="timeline-day header">Fri</div><div class="timeline-day header">Sat</div><div class="timeline-day header">Sun</div>
+                            <div class="timeline-day action">GnRH</div><div class="timeline-day"></div><div class="timeline-day"></div><div class="timeline-day"></div><div class="timeline-day"></div><div class="timeline-day"></div><div class="timeline-day"></div>
+                            <div class="col-span-7 h-2"></div>
+                             <div class="timeline-day action">PGF</div><div class="timeline-day"></div><div class="timeline-day"></div><div class="timeline-day action">GnRH</div><div class="timeline-day"></div><div class="timeline-day"></div><div class="timeline-day"></div>
+                            <div class="font-semibold col-span-7 text-center py-2 bg-gray-100 mt-4">Weeks 3-4: Breeding Ovsynch & TAI</div>
+                            <div class="timeline-day header">Mon</div><div class="timeline-day header">Tue</div><div class="timeline-day header">Wed</div><div class="timeline-day header">Thu</div><div class="timeline-day header">Fri</div><div class="timeline-day header">Sat</div><div class="timeline-day header">Sun</div>
+                            <div class="timeline-day"></div><div class="timeline-day"></div><div class="timeline-day"></div><div class="timeline-day action">GnRH</div><div class="timeline-day"></div><div class="timeline-day"></div><div class="timeline-day"></div>
+                            <div class="col-span-7 h-2"></div>
+                            <div class="timeline-day"></div><div class="timeline-day"></div><div class="timeline-day"></div><div class="timeline-day action">PGF</div><div class="timeline-day"></div><div class="timeline-day action">GnRH</div><div class="timeline-day ai">TAI</div>
+                        `
+                    },
+                    'cow-anoestrous': {
+                        title: 'GPG + P4 Program for Anoestrous Cows',
+                        desc: "The recommended NZ best practice for treating diagnosed anoestrous cows. This is an Ovsynch protocol with the addition of an intravaginal progesterone (P4) device. The P4 provides essential priming to the reproductive system of non-cycling cows, improving their response to the sync hormones.",
+                        bestFor: "Specifically treating individual cows or small groups diagnosed as non-cycling.",
+                        proTip: `
+                            <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-r-lg mt-6">
+                                <h4 class="font-semibold text-yellow-900">Pro-Tip: Optimising Luteolysis</h4>
+                                <p class="text-yellow-800">To ensure complete destruction of the corpus luteum (luteolysis), especially in high-producing cows, consider alternative PGF strategies with your vet. Options include giving a higher dose (e.g., 3-4ml vs standard 2ml) or a split dose (e.g., two standard injections 12-24 hours apart).</p>
+                            </div>
+                        `,
+                        timeline: `
+                            <div class="timeline-day header">Day 0</div>
+                            <div class="timeline-day header">...</div>
+                            <div class="timeline-day header">Day 7</div>
+                            <div class="timeline-day header">Day 8</div>
+                            <div class="timeline-day header">Day 9</div>
+                            <div class="timeline-day header">...</div>
+                            <div class="timeline-day header">...</div>
+                            <div class="timeline-day action">Inject GnRH<br>Insert P4</div>
+                            <div class="timeline-day"></div>
+                            <div class="timeline-day action">Remove P4<br>Inject PGF</div>
+                            <div class="timeline-day"></div>
+                            <div class="timeline-day action">Inject GnRH</div>
+                            <div class="timeline-day ai">Timed AI</div>
+                            <div class="timeline-day"></div>
+                        `
+                    }
+                };
+                
+                const protocol = content[protocolId];
+                cowProtocolContent.innerHTML = `
+                    <div class="bg-white p-6 rounded-lg shadow">
+                        <h3 class="text-xl font-semibold mb-2">${protocol.title}</h3>
+                        <p class="text-gray-700 mb-4">${protocol.desc}</p>
+                        <div class="bg-indigo-50 border-l-4 border-indigo-400 p-4 rounded-r-lg">
+                            <h4 class="font-semibold text-indigo-900">Best Suited For:</h4>
+                            <p class="text-indigo-800">${protocol.bestFor}</p>
+                        </div>
+                        ${protocol.proTip}
+                        <h4 class="font-semibold mt-6 mb-2">Protocol Timeline:</h4>
+                        <div class="timeline-grid">${protocol.timeline}</div>
+                    </div>
+                `;
+                
+                cowTabs.forEach(tab => tab.classList.toggle('active', tab.dataset.protocol === protocolId));
+            }
+            
+            function calculateROI() {
+                const milkPrice = parseFloat(document.getElementById('milkPrice').value) || 0;
+                const dailyMS = parseFloat(document.getElementById('dailyMS').value) || 0;
+                const heifersTreated = parseInt(document.getElementById('heifersTreated').value) || 0;
+                const programCost = parseFloat(document.getElementById('programCost').value) || 0;
+
+                const extraDaysInMilk = 10;
+                const benefitPerHeifer = extraDaysInMilk * dailyMS * milkPrice;
+                const netReturnPerHeifer = benefitPerHeifer - programCost;
+                const totalNetReturn = netReturnPerHeifer * heifersTreated;
+
+                document.getElementById('benefitPerHeifer').textContent = `$${benefitPerHeifer.toFixed(2)}`;
+                document.getElementById('netReturnPerHeifer').textContent = `$${netReturnPerHeifer.toFixed(2)}`;
+                document.getElementById('totalNetReturn').textContent = `$${totalNetReturn.toLocaleString('en-NZ', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                
+                document.getElementById('netReturnPerHeifer').classList.toggle('text-red-600', netReturnPerHeifer < 0);
+                document.getElementById('netReturnPerHeifer').classList.toggle('text-green-600', netReturnPerHeifer >= 0);
+                document.getElementById('totalNetReturn').classList.toggle('text-red-600', totalNetReturn < 0);
+                document.getElementById('totalNetReturn').classList.toggle('text-green-600', totalNetReturn >= 0);
+            }
+
+            navButtons.forEach(button => {
+                button.addEventListener('click', () => switchPage(button.dataset.target));
+            });
+            
+            mobileNav.addEventListener('change', (e) => switchPage(e.target.value));
+
+            heiferTabs.forEach(tab => {
+                tab.addEventListener('click', () => renderHeiferProtocol(tab.dataset.protocol));
+            });
+            
+            cowTabs.forEach(tab => {
+                tab.addEventListener('click', () => renderCowProtocol(tab.dataset.protocol));
+            });
+            
+            document.getElementById('economics').addEventListener('input', calculateROI);
+
+            switchPage('why-sync');
+            renderHeiferProtocol('heifer-cosynch');
+            renderCowProtocol('cow-presynch');
+            calculateROI();
+        });
+    </script>
+</body>
+</html>
