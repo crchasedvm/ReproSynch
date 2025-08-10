@@ -120,10 +120,11 @@
                 <h2 class="text-3xl font-bold text-gray-900 mb-2">Farm-Specific Cost-Benefit Analysis</h2>
                 <p class="mb-6 text-lg text-gray-600">An informed business decision requires a cost-benefit analysis tailored to your farm. Use this framework to calculate the potential return on investment (ROI) from implementing a synchronisation program. Adjust the values below to match your farm's data.</p>
                 
-                <div class="bg-white p-8 rounded-lg shadow">
+                <div class="bg-white p-8 rounded-lg shadow mb-8">
+                    <h3 class="text-2xl font-bold text-gray-800 mb-4">Heifer Program Analysis</h3>
                     <div class="grid md:grid-cols-2 gap-8">
                         <div>
-                            <h3 class="text-xl font-semibold mb-4">Your Farm's Inputs</h3>
+                            <h4 class="text-xl font-semibold mb-4">Heifer Inputs</h4>
                             <div class="space-y-4">
                                 <div>
                                     <label for="milkPrice" class="block text-sm font-medium text-gray-700">Milk Price ($/kgMS)</label>
@@ -144,7 +145,7 @@
                             </div>
                         </div>
                         <div class="bg-indigo-50 p-6 rounded-lg">
-                            <h3 class="text-xl font-semibold mb-4 text-indigo-900">Projected ROI for "Heifer Plus" Program</h3>
+                            <h4 class="text-xl font-semibold mb-4 text-indigo-900">Projected ROI for "Heifer Plus" Program</h4>
                             <p class="text-gray-600 mb-4">Based on trial data showing 10 extra days in milk per heifer vs standard programs.</p>
                             <div class="space-y-3">
                                 <div>
@@ -158,6 +159,58 @@
                                 <div>
                                     <p class="text-sm text-indigo-800">Total Net Return for Mob</p>
                                     <p id="totalNetReturn" class="text-3xl font-bold text-green-600">$1,000.00</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white p-8 rounded-lg shadow">
+                    <h3 class="text-2xl font-bold text-gray-800 mb-4">Lactating Cow Program Analysis</h3>
+                     <p class="mb-6 text-gray-600">This calculator models the potential gains of implementing a high-performance program like Double-Ovsynch over a standard protocol, based on DairyNZ economic models. Adjust the expected performance improvements below.</p>
+                    <div class="grid md:grid-cols-2 gap-8">
+                        <div>
+                            <h4 class="text-xl font-semibold mb-4">Lactating Cow Inputs</h4>
+                            <div class="space-y-4">
+                                <div>
+                                    <label for="herdSize" class="block text-sm font-medium text-gray-700">Total Herd Size (Milking Cows)</label>
+                                    <input type="number" id="herdSize" value="400" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                                </div>
+                                <div>
+                                    <label for="cowsTreated" class="block text-sm font-medium text-gray-700">Number of Cows to Treat</label>
+                                    <input type="number" id="cowsTreated" value="100" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                                </div>
+                                <div>
+                                    <label for="cowProgramCost" class="block text-sm font-medium text-gray-700">Program Cost per Cow ($)</label>
+                                    <input type="number" id="cowProgramCost" value="55" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" placeholder="e.g., Double-Ovsynch">
+                                </div>
+                                <div class="grid grid-cols-2 gap-4 pt-2">
+                                    <div>
+                                        <label for="sixWeekImprovement" class="block text-sm font-medium text-gray-700">6-Wk In-Calf Rate Improvement (%)</label>
+                                        <input type="number" id="sixWeekImprovement" value="8" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                                    </div>
+                                    <div>
+                                        <label for="emptyRateReduction" class="block text-sm font-medium text-gray-700">Not-In-Calf Rate Reduction (%)</label>
+                                        <input type="number" id="emptyRateReduction" value="4" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-indigo-50 p-6 rounded-lg">
+                            <h4 class="text-xl font-semibold mb-4 text-indigo-900">Projected Herd-Level Gains</h4>
+                            <p class="text-gray-600 mb-4">Benefits are calculated across the entire herd based on improved calving patterns.</p>
+                            <div class="space-y-3">
+                                <div>
+                                    <p class="text-sm text-indigo-800">Gain from Improved 6-Wk In-Calf Rate</p>
+                                    <p id="sixWeekBenefit" class="text-2xl font-bold text-indigo-900">$12,800.00</p>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-indigo-800">Gain from Reduced Empty Rate</p>
+                                    <p id="emptyRateBenefit" class="text-2xl font-bold text-indigo-900">$16,000.00</p>
+                                </div>
+                                 <div class="pt-2 border-t border-indigo-200">
+                                    <p class="text-sm text-indigo-800">Total Net Return for Herd</p>
+                                    <p id="netReturnCows" class="text-3xl font-bold text-green-600">$23,300.00</p>
                                 </div>
                             </div>
                         </div>
@@ -453,20 +506,25 @@
                     },
                     'cow-presynch': {
                         title: 'Presynch-11 / Ovsynch',
-                        desc: "A robust strategy for predominantly CYCLING cows. The initial PGF injections 'stage' the herd's cycles, ensuring most cows are in the optimal state for the main Ovsynch TAI protocol, leading to excellent pregnancy rates.",
+                        desc: "A robust strategy for predominantly CYCLING cows. The initial PGF injections 'stage' the herd's cycles. While the first PGF shot is beneficial for catching very early cycling cows, the second PGF shot is the critical one for ensuring most cows are in the optimal state for the main Ovsynch TAI protocol.",
                         bestFor: "Herds with good cycling rates aiming for a high-submission, high-fertility first round of AI.",
-                        proTip: "",
+                        proTip: `
+                            <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-r-lg mt-6">
+                                <h4 class="font-semibold text-yellow-900">Pro-Tip: Optional P4 Support</h4>
+                                <p class="text-yellow-800">For added insurance in mixed groups or where cycling status is uncertain, a P4 device can be inserted at the GnRH (G1) injection and removed at the final PGF injection. This provides progesterone support to any non-cycling cows in the group, improving their response.</p>
+                            </div>
+                        `,
                         timeline: `
                             <div class="font-semibold col-span-7 text-center py-2 bg-gray-100 rounded-t-lg">Weeks 1-3: Presynch Phase</div>
                             <div class="timeline-day header">Mon</div><div class="timeline-day header">Tue</div><div class="timeline-day header">Wed</div><div class="timeline-day header">Thu</div><div class="timeline-day header">Fri</div><div class="timeline-day header">Sat</div><div class="timeline-day header">Sun</div>
-                            <div class="timeline-day action">PGF (1)</div><div class="timeline-day"></div><div class="timeline-day"></div><div class="timeline-day"></div><div class="timeline-day"></div><div class="timeline-day"></div><div class="timeline-day"></div>
+                            <div class="timeline-day action">PGF (1)<br><span class='text-xs'>(Optional)</span></div><div class="timeline-day"></div><div class="timeline-day"></div><div class="timeline-day"></div><div class="timeline-day"></div><div class="timeline-day"></div><div class="timeline-day"></div>
                             <div class="col-span-7 h-2"></div>
                             <div class="timeline-day action">PGF (2)</div><div class="timeline-day"></div><div class="timeline-day"></div><div class="timeline-day"></div><div class="timeline-day"></div><div class="timeline-day"></div><div class="timeline-day"></div>
                             <div class="font-semibold col-span-7 text-center py-2 bg-gray-100 mt-4">Weeks 4-5: Ovsynch & TAI</div>
                             <div class="timeline-day header">Mon</div><div class="timeline-day header">Tue</div><div class="timeline-day header">Wed</div><div class="timeline-day header">Thu</div><div class="timeline-day header">Fri</div><div class="timeline-day header">Sat</div><div class="timeline-day header">Sun</div>
-                            <div class="timeline-day"></div><div class="timeline-day"></div><div class="timeline-day"></div><div class="timeline-day action">GnRH (1)</div><div class="timeline-day"></div><div class="timeline-day"></div><div class="timeline-day"></div>
+                            <div class="timeline-day"></div><div class="timeline-day"></div><div class="timeline-day"></div><div class="timeline-day action">GnRH (1)<br><span class='text-xs'>(+P4 Opt.)</span></div><div class="timeline-day"></div><div class="timeline-day"></div><div class="timeline-day"></div>
                             <div class="col-span-7 h-2"></div>
-                            <div class="timeline-day"></div><div class="timeline-day"></div><div class="timeline-day"></div><div class="timeline-day action">PGF</div><div class="timeline-day"></div><div class="timeline-day action">GnRH (2)</div><div class="timeline-day ai">TAI</div>
+                            <div class="timeline-day"></div><div class="timeline-day"></div><div class="timeline-day"></div><div class="timeline-day action">PGF<br><span class='text-xs'>(-P4 Opt.)</span></div><div class="timeline-day"></div><div class="timeline-day action">GnRH (2)</div><div class="timeline-day ai">TAI</div>
                         `
                     },
                     'cow-doubleovsynch': {
@@ -520,7 +578,8 @@
                 cowTabs.forEach(tab => tab.classList.toggle('active', tab.dataset.protocol === protocolId));
             }
             
-            function calculateROI() {
+            function calculateAllROI() {
+                // Heifer ROI
                 const milkPrice = parseFloat(document.getElementById('milkPrice').value) || 0;
                 const dailyMS = parseFloat(document.getElementById('dailyMS').value) || 0;
                 const heifersTreated = parseInt(document.getElementById('heifersTreated').value) || 0;
@@ -539,6 +598,28 @@
                 document.getElementById('netReturnPerHeifer').classList.toggle('text-green-600', netReturnPerHeifer >= 0);
                 document.getElementById('totalNetReturn').classList.toggle('text-red-600', totalNetReturn < 0);
                 document.getElementById('totalNetReturn').classList.toggle('text-green-600', totalNetReturn >= 0);
+
+                // Cow ROI
+                const herdSize = parseInt(document.getElementById('herdSize').value) || 0;
+                const cowsTreated = parseInt(document.getElementById('cowsTreated').value) || 0;
+                const cowProgramCost = parseFloat(document.getElementById('cowProgramCost').value) || 0;
+                const sixWeekImprovement = parseFloat(document.getElementById('sixWeekImprovement').value) / 100 || 0;
+                const emptyRateReduction = parseFloat(document.getElementById('emptyRateReduction').value) / 100 || 0;
+                
+                const valuePerSixWeekPoint = 4 * (milkPrice / 5.50); // Adjust value based on current milk price vs model price
+                const valuePerEmptyRatePoint = 10 * (milkPrice / 5.50);
+
+                const sixWeekBenefit = herdSize * sixWeekImprovement * 100 * valuePerSixWeekPoint;
+                const emptyRateBenefit = herdSize * emptyRateReduction * 100 * valuePerEmptyRatePoint;
+                const totalProgramCost = cowsTreated * cowProgramCost;
+                const netReturnCows = sixWeekBenefit + emptyRateBenefit - totalProgramCost;
+
+                document.getElementById('sixWeekBenefit').textContent = `$${sixWeekBenefit.toLocaleString('en-NZ', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                document.getElementById('emptyRateBenefit').textContent = `$${emptyRateBenefit.toLocaleString('en-NZ', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                document.getElementById('netReturnCows').textContent = `$${netReturnCows.toLocaleString('en-NZ', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+                document.getElementById('netReturnCows').classList.toggle('text-red-600', netReturnCows < 0);
+                document.getElementById('netReturnCows').classList.toggle('text-green-600', netReturnCows >= 0);
             }
 
             navButtons.forEach(button => {
@@ -555,13 +636,13 @@
                 tab.addEventListener('click', () => renderCowProtocol(tab.dataset.protocol));
             });
             
-            document.getElementById('economics').addEventListener('input', calculateROI);
+            document.getElementById('economics').addEventListener('input', calculateAllROI);
 
             // Initial Page Load
             switchPage('why-sync');
             renderHeiferProtocol('heifer-cosynch');
             renderCowProtocol('cow-anoestrous'); // Default to the new first tab
-            calculateROI();
+            calculateAllROI();
         });
     </script>
 </body>
